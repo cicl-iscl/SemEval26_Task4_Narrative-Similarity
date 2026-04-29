@@ -1,0 +1,127 @@
+============================================================================ 
+SemEval 2026 Reviews for Submission #346
+============================================================================ 
+
+Title: CICL26 at SemEval-2026 Task 4: Narrative Story Similarity and Narrative Representation Learning
+Authors: Wanzhao Zhang and Yue Yu
+============================================================================
+                            META-REVIEW
+============================================================================ 
+Recommendation: Accept
+Comments: The paper is well written and a suitable contribution to the task; it targets positional bias, an established risk with LLMs, making it potentially relevant beyond the scope of the narrative domain. The camera-ready version should incorporate the formatting fixes suggested by Reviewer 2.
+
+============================================================================
+                            REVIEWER #1
+============================================================================
+
+---------------------------------------------------------------------------
+Reviewer's Scores
+---------------------------------------------------------------------------
+                   Appropriateness (1-5): 5
+                           Clarity (1-5): 4
+      Originality / Innovativeness (1-5): 3
+           Soundness / Correctness (1-5): 4
+             Meaningful Comparison (1-5): 3
+                      Thoroughness (1-5): 4
+                    Recommendation (1-5): 3
+               Reviewer Confidence (1-5): 4
+
+Detailed Comments
+---------------------------------------------------------------------------
+The paper presents a well-structured and technically sound approach to the SemEval-2026 Task 4 Track A. The authors propose a lightweight inference-time cascade strategy that effectively addresses two significant hurdles in large language model (LLM) comparative reasoning: sampling variance and positional bias. By integrating self-consistency voting with a swap-based symmetry test, the system offers a practical solution for improving robustness without the need for expensive model retraining or fine-tuning. The decision-making logic, particularly the margin-based resolution for conflicting cases, is clearly defined and provides a deterministic framework for handling model uncertainty.
+
+However, the methodology has certain limitations that should be addressed. The primary concern is the significant increase in inference cost and latency, as the strategy requires at least six API calls per instance (three for the original order and three for the swapped order). While the paper acknowledges this cost, it lacks a detailed quantitative analysis comparing the performance gains of the full cascade against a standard single-pass inference baseline. Furthermore, while the 59% accuracy achieved on the official test set reflects the difficulty of narrative reasoning, the results would be more compelling if positioned alongside other baseline models provided by the organizers. Finally, the empirical finding that even high-margin (3-0) votes are susceptible to swap inconsistency is a valuable insight, but the choice of increasing temperature to 0.4 for tie-breaking lacks sufficient theoretical or empirical justification in the current text.
+---------------------------------------------------------------------------
+
+
+Questions for Authors
+---------------------------------------------------------------------------
+In Step 3 of the cascade decision rule, why was the temperature specifically increased to 0.4 for the tie-breaking voting round?  Did you observe that higher entropy significantly helps in resolving cases where the model is stuck in an equal-margin disagreement or whether you do some experiments to get the method?
+
+The system prompt instructs the model to prioritize Outcomes as the most important dimension, followed by Course of Action, and finally Theme. Was this hierarchy derived from a manual error analysis of the development set, or was it based on the task's official annotation guidelines? 
+
+Were there any specific types of narrative "confusing factors" (e.g., plot twists or multiple characters) where the cascade strategy consistently failed to resolve the correct answer?
+---------------------------------------------------------------------------
+
+
+
+============================================================================
+                            REVIEWER #2
+============================================================================
+
+---------------------------------------------------------------------------
+Reviewer's Scores
+---------------------------------------------------------------------------
+                   Appropriateness (1-5): 5
+                           Clarity (1-5): 4
+      Originality / Innovativeness (1-5): 4
+           Soundness / Correctness (1-5): 3
+             Meaningful Comparison (1-5): 2
+                      Thoroughness (1-5): 2
+                    Recommendation (1-5): 3
+               Reviewer Confidence (1-5): 3
+
+Detailed Comments
+---------------------------------------------------------------------------
+This paper presents a lightweight inference-time cascade strategy for SemEval-2026 Task 4 (Track A only). The approach combines self-consistency voting (3 forward calls), a swap-based symmetry test to address positional bias, and a margin-based deterministic decision rule to resolve disagreements. The system uses GPT-4.1-mini and achieves 59% accuracy on the official test set.
+
+The paper identifies a genuine and important challenge -- positional bias in LLM-based comparative judgment -- and proposes a well-structured solution. The swap-based symmetry test is nicely motivated, and I appreciated how clearly the authors frame the problem.
+
+The cascade strategy is clearly formalized with proper mathematical notation (Sections 3.2-3.4). The three-step decision rule (consensus, margin, tiebreaker) is straightforward to follow and would be easy for others to reproduce.
+
+Missing single-call baseline: The paper's central claim is that "structured inference-time aggregation provides measurable gains over single-call LLM predictions," but no single-call GPT-4.1-mini accuracy is reported. I would kindly encourage the authors to include this comparison, as it is essential for validating the paper's main contribution.
+
+Ablation study mismatch: The ablation uses GPT-3.5-turbo with zero-shot prompting (no cascade), while the main system uses GPT-4.1-mini with the full cascade and a carefully designed prompt. This makes it a bit difficult to attribute the improvements specifically to the cascade versus the model upgrade and prompt engineering.
+
+Formatting issues (ACL Pubcheck): The paper was run through the ACL Pubcheck tool and produced 5 errors. Text on pages 1 through 5 bleeds into the bottom margin. According to ACL formatting guidelines, the bottom margin should be empty (i.e., without page numbers) and populated only when building the proceedings. Additionally, CropBox metadata is missing from the PDF pages. I would kindly request the authors to fix these margin violations in the camera-ready version to comply with ACL formatting requirements.
+---------------------------------------------------------------------------
+
+
+Questions for Authors
+---------------------------------------------------------------------------
+What is the single-call accuracy of GPT-4.1-mini (without the cascade) on both the dev and test sets? This would help validate the paper's central claim.
+
+How many instances triggered the tiebreaker step (Step 3 of the cascade), and what was the accuracy on those specific instances?
+---------------------------------------------------------------------------
+
+
+
+============================================================================
+                            REVIEWER #3
+============================================================================
+
+---------------------------------------------------------------------------
+Reviewer's Scores
+---------------------------------------------------------------------------
+                   Appropriateness (1-5): 5
+                           Clarity (1-5): 4
+      Originality / Innovativeness (1-5): 3
+           Soundness / Correctness (1-5): 3
+             Meaningful Comparison (1-5): 3
+                      Thoroughness (1-5): 4
+                    Recommendation (1-5): 4
+               Reviewer Confidence (1-5): 4
+
+Detailed Comments
+---------------------------------------------------------------------------
+Strengths
+- Clear motivation and a pragmatic solution. You explicitly target two practical failure modes in pairwise LLM judgment: stochastic sampling variance and candidate-order sensitivity, and propose a simple aggregation strategy that does not require training or fine-tuning.
+- Well-specified inference procedure. The cascade rule (agreement â†’ larger margin â†’ tie-break voting) is easy to follow and likely easy to implement.
+- Useful stability analysis. The swap-consistency analysis highlights that even high internal vote margins can still be inconsistent under permutation, which is an important cautionary observation for "self-consistency-only" approaches.
+- Reproducibility-oriented reporting (within constraints). You provide the JSON-only output format and a concrete system prompt, which helps others replicate the exact I/O behavior.
+
+Weaknesses
+- Quantify the improvement vs. a single-call baseline. The abstract and results section state "measurable gains over single-call inference," but the paper does not report the single-call accuracy under the same model/prompt, nor an ablation showing the incremental gains of (a) self-consistency only, (b) swap only, and (c) the full cascade. Adding a small table on the dev set would substantially strengthen the main claim.
+- Cost / latency transparency. The method uses multiple API calls per instance (3 forward + 3 swapped, plus potential tie-break voting), which increases inference cost. A brief estimate of average calls per item (including how often tie-break happens) and wall-clock time would help readers judge practicality.
+- Reproducibility limitations. You already acknowledge dependence on commercial LLM APIs. If possible, consider reporting the exact API version/date, and whether temperature/top-p and retry policies influence outcomes (even in brief).
+---------------------------------------------------------------------------
+
+
+Questions for Authors
+---------------------------------------------------------------------------
+- What is the single-call (N=1, no swap) accuracy on the dev set (and/or test, if available under the same run conditions), using the same model/prompt? This is important to quantify the "measurable gains" claim.
+- Can you provide an ablation: self-consistency only vs. swap only vs. full cascade (and optionally the margin rule), at least on the dev set?
+- How often do you hit the tie-break case (equal margins) that triggers additional voting at higher temperature? What is the average number of API calls per instance in practice?
+- Did you observe sensitivity to prompt variants (e.g., small wording changes) given the known instability in comparative settings? If yes, how did you select the final prompt?
+---------------------------------------------------------------------------
+
